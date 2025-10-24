@@ -1,12 +1,12 @@
 'use client';
 
-import { onCLS, onINP, onLCP } from 'web-vitals';
+import { onCLS, onINP, onLCP, type Metric } from 'web-vitals';
 import { useEffect } from 'react';
 
 export function WebVitalsLogger() {
   useEffect(() => {
     // Função para logar as métricas de forma clara
-    const logMetric = (metric) => {
+    const logMetric = (metric: Metric) => {
       const body = {
         name: metric.name,
         value: metric.value,
