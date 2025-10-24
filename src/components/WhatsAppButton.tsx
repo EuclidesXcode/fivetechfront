@@ -1,0 +1,31 @@
+'use client';
+
+import React from 'react';
+
+const WhatsAppButton = () => {
+  const phoneNumber = '5511934241132';
+  const message = 'Olá! Gostaria de mais informações sobre os serviços da FiveTech.';
+  const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+
+  return (
+    <a
+      href={whatsappUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="fixed bottom-6 right-6 z-50 bg-[#25d366] text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform duration-300 ease-in-out"
+      aria-label="Contato via WhatsApp"
+    >
+      {/* WhatsApp SVG Icon */}
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        className="w-8 h-8"
+        fill="currentColor"
+      >
+        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.886-.001 2.269.655 4.357 1.849 6.081l-1.214 4.439 4.533-1.186zM18.37 14.261c-.597-.3-3.542-1.746-4.095-1.941-.552-.195-.952-.3-1.353.3-.4.6-.943 1.941-1.157 2.342-.215.4-.429.45-.792.15-.363-.3-1.527-1.266-2.9-2.529-.912-.811-1.83-1.845-2.045-2.146-.214-.301-.042-.464.258-.764.273-.274.552-.699.829-1.049.277-.35.363-.599.552-.999.19-.4.095-.75-.058-1.05-.153-.3-.952-2.3-1.305-3.151-.353-.85-.707-.733-.952-.733-.246 0-.552-.058-.852-.058-.3 0-.792.104-1.214.525-.422.422-1.623 1.583-1.623 3.855 0 2.272 1.66 4.472 1.885 4.772.224.301 3.205 4.872 7.753 6.79 1.08.466 1.92.745 2.58.945.863.26 1.644.228 2.262.133.68-.104 2.109-1.266 2.409-2.489.3-.224.3-.4.205-.7z" />
+      </svg>
+    </a>
+  );
+};
+
+export default WhatsAppButton;
