@@ -23,7 +23,7 @@ export default function Home() {
     setIsHiding(true);
     setTimeout(() => {
       setSelectedService(service);
-    }, 1000); // Delay for fade-out and zoom
+    }, 1000);
   };
 
   const handleCloseModal = () => {
@@ -31,7 +31,7 @@ export default function Home() {
     window.dispatchEvent(new CustomEvent('zoomOut'));
     setTimeout(() => {
       setIsHiding(false);
-    }, 500); // Delay to allow for zoom-out animation
+    }, 500);
   };
 
   return (

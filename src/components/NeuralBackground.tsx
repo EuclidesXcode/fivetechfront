@@ -3,7 +3,6 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
-// Throttle utility (unchanged)
 function throttle<T extends (...args: any[]) => void>(func: T, limit: number): T {
   let inThrottle: boolean;
   let lastFunc: NodeJS.Timeout;
@@ -26,13 +25,13 @@ export default function NeuralBackground() {
   const connectionsRef = useRef<any[]>([]);
   const dataParticlesRef = useRef<THREE.Mesh[]>([]);
   const pointsRef = useRef<THREE.Mesh[]>([]);
-  // Refs for zoom animation
+  
   const zoomTargetRef = useRef<THREE.Vector3 | null>(null);
   const isZoomingInRef = useRef(false);
   const isZoomingOutRef = useRef(false);
   const originalCameraPosition = useRef(new THREE.Vector3(0, 0, 40));
   const focusedNeuronRef = useRef<THREE.Mesh | null>(null);
-  // Ref for dynamic spawn threshold
+  
   const spawnThresholdRef = useRef(100);
 
   useEffect(() => {
@@ -52,11 +51,12 @@ export default function NeuralBackground() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     containerRef.current.appendChild(renderer.domElement);
 
+    // --- Fade Plane for Trail Effect (now parented to camera) ---
     const fadeMaterial = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.1 });
     const fadePlane = new THREE.PlaneGeometry(1, 1);
     const fadeMesh = new THREE.Mesh(fadePlane, fadeMaterial);
-    fadeMesh.renderOrder = -1;
-    scene.add(fadeMesh);
+    fadeMesh.position.z = -1; // Position it just in front of the camera's near plane
+    camera.add(fadeMesh); // Add it as a child of the camera
 
     const networkGroup = new THREE.Group();
     scene.add(networkGroup);
@@ -169,7 +169,6 @@ export default function NeuralBackground() {
           const endPoint = connection.end;
           endPoint.userData.dataReceived = (endPoint.userData.dataReceived || 0) + 1;
 
-          // USER REQUEST: Dynamic spawn threshold
           if (endPoint.userData.dataReceived >= spawnThresholdRef.current) {
             endPoint.userData.dataReceived = 0;
             
@@ -187,11 +186,11 @@ export default function NeuralBackground() {
             spawnNeuron(newPosition);
             updateNetwork();
 
-            spawnThresholdRef.current += 100;
+            spawnThresholdRef.current += 50;
           }
 
           const material = endPoint.material as THREE.MeshBasicMaterial;
-          material.opacity = 0.8;
+          material.opacity = 0.9;
           const fadeOut = () => {
             material.opacity *= 0.95;
             if (material.opacity > endPoint.userData.baseOpacity) requestAnimationFrame(fadeOut);
@@ -208,7 +207,18 @@ export default function NeuralBackground() {
       renderer.render(scene, camera);
     };
 
-    const handleResize = () => { /* ... unchanged ... */ };
+    const handleResize = () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+
+      // Scale the fade plane to cover the screen. It's a child of the camera.
+      const distance = Math.abs(fadeMesh.position.z);
+      const vFov = (camera.fov * Math.PI) / 180;
+      const height = 2 * Math.tan(vFov / 2) * distance;
+      const width = height * camera.aspect;
+      fadeMesh.scale.set(width, height, 1);
+    };
     const throttledScroll = throttle(handleScroll, 100);
     window.addEventListener('scroll', throttledScroll);
     window.addEventListener('resize', handleResize);
