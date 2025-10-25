@@ -186,7 +186,7 @@ export default function NeuralBackground() {
             spawnNeuron(newPosition);
             updateNetwork();
 
-            spawnThresholdRef.current += 50;
+            spawnThresholdRef.current += 30;
           }
 
           const material = endPoint.material as THREE.MeshBasicMaterial;
