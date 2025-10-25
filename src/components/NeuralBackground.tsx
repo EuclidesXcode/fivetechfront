@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
+// Throttle utility (unchanged)
 function throttle<T extends (...args: any[]) => void>(func: T, limit: number): T {
   let inThrottle: boolean;
   let lastFunc: NodeJS.Timeout;
@@ -20,10 +21,25 @@ function throttle<T extends (...args: any[]) => void>(func: T, limit: number): T
   } as T;
 }
 
+// USER REQUEST: Helper to create a glowing sprite texture
+function createGlowTexture() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 64;
+  canvas.height = 64;
+  const context = canvas.getContext('2d')!;
+  const gradient = context.createRadialGradient(32, 32, 0, 32, 32, 32);
+  gradient.addColorStop(0, 'rgba(255,255,255,1)');
+  gradient.addColorStop(0.3, 'rgba(255,255,255,0.8)');
+  gradient.addColorStop(1, 'rgba(255,255,255,0)');
+  context.fillStyle = gradient;
+  context.fillRect(0, 0, 64, 64);
+  return new THREE.CanvasTexture(canvas);
+}
+
 export default function NeuralBackground() {
   const containerRef = useRef<HTMLDivElement>(null);
   const connectionsRef = useRef<any[]>([]);
-  const dataParticlesRef = useRef<THREE.Mesh[]>([]);
+  const dataParticlesRef = useRef<THREE.Sprite[]>([]); // Changed to Sprite
   const pointsRef = useRef<THREE.Mesh[]>([]);
   
   const zoomTargetRef = useRef<THREE.Vector3 | null>(null);
@@ -51,23 +67,22 @@ export default function NeuralBackground() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     containerRef.current.appendChild(renderer.domElement);
 
-    // --- Fade Plane for Trail Effect (now parented to camera) ---
     const fadeMaterial = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.1 });
     const fadePlane = new THREE.PlaneGeometry(1, 1);
     const fadeMesh = new THREE.Mesh(fadePlane, fadeMaterial);
-    fadeMesh.position.z = -1; // Position it just in front of the camera's near plane
-    camera.add(fadeMesh); // Add it as a child of the camera
+    fadeMesh.position.z = -1;
+    camera.add(fadeMesh);
 
     const networkGroup = new THREE.Group();
     scene.add(networkGroup);
 
     const geometry = new THREE.SphereGeometry(0.5, 8, 8);
-    const nodeMaterial = new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.4 });
+    const nodeMaterial = new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.7 });
 
     const spawnNeuron = (position: THREE.Vector3) => {
       const mesh = new THREE.Mesh(geometry, nodeMaterial.clone());
       mesh.position.copy(position);
-      mesh.userData = { baseOpacity: 0.4, dataReceived: 0 };
+      mesh.userData = { baseOpacity: 0.7, dataReceived: 0 };
       pointsRef.current.push(mesh);
       networkGroup.add(mesh);
       return mesh;
@@ -81,23 +96,34 @@ export default function NeuralBackground() {
       spawnNeuron(position);
     }
 
+    // --- Create shared materials for particles ---
+    const glowTexture = createGlowTexture();
+    const particleMaterial = new THREE.SpriteMaterial({
+      map: glowTexture,
+      color: 0xff00ff, // Pink glow
+      blending: THREE.AdditiveBlending,
+      transparent: true,
+    });
+
     const updateNetwork = () => {
       connectionsRef.current.forEach(conn => networkGroup.remove(conn.line));
       dataParticlesRef.current.forEach(p => networkGroup.remove(p));
       connectionsRef.current = [];
       dataParticlesRef.current = [];
-      const dataParticleGeometry = new THREE.SphereGeometry(0.2, 8, 8);
-      const dataParticleMaterial = new THREE.MeshBasicMaterial({ color: 0xff00ff, transparent: true, opacity: 0.9 });
+      
       const connectionDistance = 100;
       pointsRef.current.forEach((point, i) => {
         pointsRef.current.slice(i + 1).forEach(otherPoint => {
           if (point.position.distanceTo(otherPoint.position) < connectionDistance) {
-            const lineMaterial = new THREE.LineBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.15 });
+            const lineMaterial = new THREE.LineBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.3 });
             const lineGeometry = new THREE.BufferGeometry().setFromPoints([point.position, otherPoint.position]);
             const line = new THREE.Line(lineGeometry, lineMaterial);
             networkGroup.add(line);
             connectionsRef.current.push({ line, start: point, end: otherPoint, progress: Math.random() });
-            const particle = new THREE.Mesh(dataParticleGeometry, dataParticleMaterial.clone());
+            
+            // Create a Sprite instead of a Mesh
+            const particle = new THREE.Sprite(particleMaterial);
+            particle.scale.set(1.5, 1.5, 1.5); // Adjust size
             networkGroup.add(particle);
             dataParticlesRef.current.push(particle);
           }
@@ -168,10 +194,8 @@ export default function NeuralBackground() {
           connection.progress = 0;
           const endPoint = connection.end;
           endPoint.userData.dataReceived = (endPoint.userData.dataReceived || 0) + 1;
-
           if (endPoint.userData.dataReceived >= spawnThresholdRef.current) {
             endPoint.userData.dataReceived = 0;
-            
             const MAX_NEURONS = 100;
             if (pointsRef.current.length >= MAX_NEURONS) {
               const oldestNeuron = pointsRef.current.shift();
@@ -181,16 +205,23 @@ export default function NeuralBackground() {
                 (oldestNeuron.material as THREE.Material).dispose();
               }
             }
+            
+            // USER REQUEST: Spawn new neuron at a random position in the sphere
+            const radius = 100;
+            const theta = THREE.MathUtils.randFloatSpread(360) * Math.PI / 180;
+            const phi = THREE.MathUtils.randFloatSpread(360) * Math.PI / 180;
+            const newPosition = new THREE.Vector3(
+                radius * Math.sin(theta) * Math.cos(phi),
+                radius * Math.sin(theta) * Math.sin(phi),
+                radius * Math.cos(theta)
+            );
 
-            const newPosition = new THREE.Vector3().copy(endPoint.position).add(new THREE.Vector3().randomDirection().multiplyScalar(15));
             spawnNeuron(newPosition);
             updateNetwork();
-
             spawnThresholdRef.current += 30;
           }
-
           const material = endPoint.material as THREE.MeshBasicMaterial;
-          material.opacity = 0.9;
+          material.opacity = 1.0;
           const fadeOut = () => {
             material.opacity *= 0.95;
             if (material.opacity > endPoint.userData.baseOpacity) requestAnimationFrame(fadeOut);
@@ -211,8 +242,6 @@ export default function NeuralBackground() {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
-
-      // Scale the fade plane to cover the screen. It's a child of the camera.
       const distance = Math.abs(fadeMesh.position.z);
       const vFov = (camera.fov * Math.PI) / 180;
       const height = 2 * Math.tan(vFov / 2) * distance;
@@ -243,7 +272,7 @@ export default function NeuralBackground() {
   return (
     <div 
       ref={containerRef} 
-      className="fixed top-0 left-0 w-full h-full z-0 opacity-50"
+      className="fixed top-0 left-0 w-full h-full z-0 opacity-[.60]"
     />
   );
 }
