@@ -1,7 +1,13 @@
+'use client';
+
 import ServiceCard from "./ServiceCard";
 import { services } from "../data/services";
 
-export default function ServicesSection() {
+interface ServicesSectionProps {
+  onCardClick: (service: any) => void;
+}
+
+export default function ServicesSection({ onCardClick }: ServicesSectionProps) {
   return (
     <section className="py-20 px-4">
       <h2 className="text-4xl font-bold text-center mb-12 bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-purple-600">
@@ -15,6 +21,7 @@ export default function ServicesSection() {
             description={service.description}
             icon={service.icon}
             delay={index * 0.1}
+            onClick={() => onCardClick(service)}
           />
         ))}
       </div>

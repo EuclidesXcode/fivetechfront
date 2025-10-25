@@ -26,6 +26,11 @@ export default function NeuralBackground() {
   const connectionsRef = useRef<any[]>([]);
   const dataParticlesRef = useRef<THREE.Mesh[]>([]);
   const pointsRef = useRef<THREE.Mesh[]>([]);
+  // Refs for zoom animation
+  const zoomTargetRef = useRef<THREE.Vector3 | null>(null);
+  const isZoomingInRef = useRef(false);
+  const isZoomingOutRef = useRef(false);
+  const originalCameraPosition = useRef(new THREE.Vector3(0, 0, 40)); // Set a more central initial position
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -36,6 +41,8 @@ export default function NeuralBackground() {
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.copy(originalCameraPosition.current);
+    
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.autoClear = false;
@@ -63,32 +70,22 @@ export default function NeuralBackground() {
       return mesh;
     };
 
-    // Start with an initial set of points
     for (let i = 0; i < 40; i++) {
       const radius = 100;
       const theta = THREE.MathUtils.randFloatSpread(360) * Math.PI / 180;
       const phi = THREE.MathUtils.randFloatSpread(360) * Math.PI / 180;
-      const position = new THREE.Vector3(
-        radius * Math.sin(theta) * Math.cos(phi),
-        radius * Math.sin(theta) * Math.sin(phi),
-        radius * Math.cos(theta)
-      );
+      const position = new THREE.Vector3(radius * Math.sin(theta) * Math.cos(phi), radius * Math.sin(theta) * Math.sin(phi), radius * Math.cos(theta));
       spawnNeuron(position);
     }
-
-    camera.position.z = 0;
-    camera.lookAt(0, 0, 0);
 
     const updateNetwork = () => {
       connectionsRef.current.forEach(conn => networkGroup.remove(conn.line));
       dataParticlesRef.current.forEach(p => networkGroup.remove(p));
       connectionsRef.current = [];
       dataParticlesRef.current = [];
-
       const dataParticleGeometry = new THREE.SphereGeometry(0.2, 8, 8);
       const dataParticleMaterial = new THREE.MeshBasicMaterial({ color: 0xff00ff, transparent: true, opacity: 0.8 });
-      const connectionDistance = 70; // Fixed, mature connection distance
-
+      const connectionDistance = 70;
       pointsRef.current.forEach((point, i) => {
         pointsRef.current.slice(i + 1).forEach(otherPoint => {
           if (point.position.distanceTo(otherPoint.position) < connectionDistance) {
@@ -105,47 +102,78 @@ export default function NeuralBackground() {
       });
     };
 
-    updateNetwork(); // Initial network generation
+    updateNetwork();
 
     let currentRotation = 0;
     const handleScroll = () => {
+      if (isZoomingInRef.current || isZoomingOutRef.current) return;
       const scrollY = window.scrollY || 0;
       const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
       const scrollPercent = scrollHeight > 0 ? scrollY / scrollHeight : 0;
       currentRotation = scrollPercent * Math.PI * 2;
     };
 
+    const handleZoomInRequest = () => {
+      if (pointsRef.current.length > 0) {
+        const randomIndex = Math.floor(Math.random() * pointsRef.current.length);
+        const randomNeuron = pointsRef.current[randomIndex];
+        zoomTargetRef.current = randomNeuron.position.clone().add(new THREE.Vector3(0, 0, 5));
+        isZoomingInRef.current = true;
+        isZoomingOutRef.current = false;
+      }
+    };
+
+    const handleZoomOutRequest = () => {
+      isZoomingOutRef.current = true;
+      isZoomingInRef.current = false;
+    };
+
     let animationFrameId: number;
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
       renderer.clearDepth();
-      networkGroup.rotation.y += (currentRotation - networkGroup.rotation.y) * 0.05;
 
+      if (isZoomingInRef.current && zoomTargetRef.current) {
+        const targetNeuronPos = zoomTargetRef.current.clone().sub(new THREE.Vector3(0, 0, 5));
+        camera.position.lerp(zoomTargetRef.current, 0.05);
+        camera.lookAt(targetNeuronPos);
+        if (camera.position.distanceTo(zoomTargetRef.current) < 0.1) {
+          isZoomingInRef.current = false;
+        }
+      } else if (isZoomingOutRef.current) {
+        camera.position.lerp(originalCameraPosition.current, 0.05);
+        camera.lookAt(0, 0, 0);
+        if (camera.position.distanceTo(originalCameraPosition.current) < 0.1) {
+          isZoomingOutRef.current = false;
+        }
+      } else {
+        networkGroup.rotation.y += (currentRotation - networkGroup.rotation.y) * 0.05;
+        camera.lookAt(0, 0, 0);
+      }
+
+      // ... (rest of the animation logic is unchanged) ...
       connectionsRef.current.forEach((connection, index) => {
         connection.progress += 0.01;
         if (connection.progress > 1) {
           connection.progress = 0;
           const endPoint = connection.end;
           endPoint.userData.dataReceived = (endPoint.userData.dataReceived || 0) + 1;
-
-          if (endPoint.userData.dataReceived >= 1000) {
+          const SPAWN_THRESHOLD = 800;
+          if (endPoint.userData.dataReceived >= SPAWN_THRESHOLD) {
             endPoint.userData.dataReceived = 0;
-
-            // USER REQUEST: Performance - Cap and recycle neurons
-            if (pointsRef.current.length >= 150) {
-              const oldestNeuron = pointsRef.current.shift(); // 1. Dequeue the oldest
+            const MAX_NEURONS = 150;
+            if (pointsRef.current.length >= MAX_NEURONS) {
+              const oldestNeuron = pointsRef.current.shift();
               if (oldestNeuron) {
-                networkGroup.remove(oldestNeuron); // 2. Remove from scene
-                oldestNeuron.geometry.dispose(); // 3. Dispose geometry
-                (oldestNeuron.material as THREE.Material).dispose(); // 4. Dispose material
+                networkGroup.remove(oldestNeuron);
+                oldestNeuron.geometry.dispose();
+                (oldestNeuron.material as THREE.Material).dispose();
               }
             }
-
             const newPosition = new THREE.Vector3().copy(endPoint.position).add(new THREE.Vector3().randomDirection().multiplyScalar(15));
             spawnNeuron(newPosition);
-            updateNetwork(); // Rebuild network with the new point
+            updateNetwork();
           }
-
           const material = endPoint.material as THREE.MeshBasicMaterial;
           material.opacity = 0.8;
           const fadeOut = () => {
@@ -168,12 +196,16 @@ export default function NeuralBackground() {
     const throttledScroll = throttle(handleScroll, 100);
     window.addEventListener('scroll', throttledScroll);
     window.addEventListener('resize', handleResize);
+    window.addEventListener('zoomToRandomNeuron', handleZoomInRequest);
+    window.addEventListener('zoomOut', handleZoomOutRequest);
     handleResize();
     animate();
 
     return () => {
       window.removeEventListener('scroll', throttledScroll);
       window.removeEventListener('resize', handleResize);
+      window.removeEventListener('zoomToRandomNeuron', handleZoomInRequest);
+      window.removeEventListener('zoomOut', handleZoomOutRequest);
       cancelAnimationFrame(animationFrameId);
       renderer.dispose();
       if (containerRef.current && renderer.domElement) {
