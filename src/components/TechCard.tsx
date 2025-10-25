@@ -9,7 +9,7 @@ export const TechCard = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="bg-gradient-to-r from-gray-900/80 to-gray-800/80 backdrop-blur-sm rounded-xl overflow-hidden shadow-2xl"
+      className="rounded-2xl border border-white/10 bg-white/2 shadow-lg shadow-black/10 transition-all hover:bg-white/8"
     >
       <div className="flex flex-col md:flex-row">
         <div className="md:w-1/2 relative h-[300px] md:h-[400px]">
@@ -19,7 +19,7 @@ export const TechCard = () => {
             fill
             sizes="(max-width: 768px) 100vw, 50vw"
             priority
-            className="object-cover"
+            className="object-cover rounded-2xl md:rounded-l-2xl md:rounded-r-none"
           />
         </div>
         <div className="md:w-1/2 p-8">

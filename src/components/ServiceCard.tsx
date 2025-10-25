@@ -22,11 +22,13 @@ export default function ServiceCard({ title, description, icon, delay }: Service
       initial={{ opacity: 0, y: 20 }}
       animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
       transition={{ duration: 0.5, delay }}
-      className="bg-gray-800/50 backdrop-blur-sm p-6 rounded-xl hover:bg-gray-700/50 transition-all"
+      className="rounded-2xl border border-white/10 bg-white/2 p-6 shadow-lg shadow-black/10 transition-all hover:bg-white/8"
     >
-      <div className="text-4xl mb-4">{icon}</div>
-      <h3 className="text-xl font-bold mb-2">{title}</h3>
-      <p className="text-gray-300">{description}</p>
+      <div className="relative z-10">
+        <div className="text-4xl mb-4">{icon}</div>
+        <h3 className="text-xl font-bold mb-2">{title}</h3>
+        <p className="text-gray-200">{description}</p>
+      </div>
     </motion.div>
   );
 }
