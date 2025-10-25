@@ -2,9 +2,11 @@
 
 import { useState } from 'react';
 import dynamic from "next/dynamic";
+import Image from 'next/image';
 import NeuralBackgroundLoader from "../components/NeuralBackgroundLoader";
 import ServiceDetailModal from '../components/ServiceDetailModal';
 import { services } from '../data/services';
+import logoSemFundo from '../assets/logo-sem-fundo.png';
 
 const TechSection = dynamic(() => import("../components/TechSection"), {
   loading: () => <div className="h-96" />,
@@ -42,13 +44,12 @@ export default function Home() {
         {/* Hero Section */}
         <section className="min-h-screen flex items-center justify-center">
           <div className="text-center">
-            <h1 className="text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-purple-600">
-              Five Tech
-            </h1>
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              Transformando ideias em soluções digitais com expertise em
-              desenvolvimento e consultoria.
-            </p>
+            <Image
+              src={logoSemFundo}
+              alt="Five Tech Logo"
+              priority
+              className="[clip-path:inset(50px_0_50px_0)] mx-auto"
+            />
           </div>
         </section>
 
