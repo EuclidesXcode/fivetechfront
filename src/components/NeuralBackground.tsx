@@ -30,7 +30,10 @@ export default function NeuralBackground() {
   const zoomTargetRef = useRef<THREE.Vector3 | null>(null);
   const isZoomingInRef = useRef(false);
   const isZoomingOutRef = useRef(false);
-  const originalCameraPosition = useRef(new THREE.Vector3(0, 0, 40)); // Set a more central initial position
+  const originalCameraPosition = useRef(new THREE.Vector3(0, 0, 40));
+  const focusedNeuronRef = useRef<THREE.Mesh | null>(null);
+  // Ref for dynamic spawn threshold
+  const spawnThresholdRef = useRef(100);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -85,7 +88,7 @@ export default function NeuralBackground() {
       dataParticlesRef.current = [];
       const dataParticleGeometry = new THREE.SphereGeometry(0.2, 8, 8);
       const dataParticleMaterial = new THREE.MeshBasicMaterial({ color: 0xff00ff, transparent: true, opacity: 0.8 });
-      const connectionDistance = 70;
+      const connectionDistance = 100;
       pointsRef.current.forEach((point, i) => {
         pointsRef.current.slice(i + 1).forEach(otherPoint => {
           if (point.position.distanceTo(otherPoint.position) < connectionDistance) {
@@ -117,13 +120,21 @@ export default function NeuralBackground() {
       if (pointsRef.current.length > 0) {
         const randomIndex = Math.floor(Math.random() * pointsRef.current.length);
         const randomNeuron = pointsRef.current[randomIndex];
-        zoomTargetRef.current = randomNeuron.position.clone().add(new THREE.Vector3(0, 0, 5));
+        focusedNeuronRef.current = randomNeuron;
+        (randomNeuron.material as THREE.MeshBasicMaterial).color.set(0xffffff);
+        randomNeuron.scale.set(2, 2, 2);
+        zoomTargetRef.current = randomNeuron.position.clone().add(new THREE.Vector3(0, 0, 2));
         isZoomingInRef.current = true;
         isZoomingOutRef.current = false;
       }
     };
 
     const handleZoomOutRequest = () => {
+      if (focusedNeuronRef.current) {
+        (focusedNeuronRef.current.material as THREE.MeshBasicMaterial).color.set(0x00ffff);
+        focusedNeuronRef.current.scale.set(1, 1, 1);
+        focusedNeuronRef.current = null;
+      }
       isZoomingOutRef.current = true;
       isZoomingInRef.current = false;
     };
@@ -134,7 +145,7 @@ export default function NeuralBackground() {
       renderer.clearDepth();
 
       if (isZoomingInRef.current && zoomTargetRef.current) {
-        const targetNeuronPos = zoomTargetRef.current.clone().sub(new THREE.Vector3(0, 0, 5));
+        const targetNeuronPos = zoomTargetRef.current.clone().sub(new THREE.Vector3(0, 0, 2));
         camera.position.lerp(zoomTargetRef.current, 0.05);
         camera.lookAt(targetNeuronPos);
         if (camera.position.distanceTo(zoomTargetRef.current) < 0.1) {
@@ -151,17 +162,18 @@ export default function NeuralBackground() {
         camera.lookAt(0, 0, 0);
       }
 
-      // ... (rest of the animation logic is unchanged) ...
       connectionsRef.current.forEach((connection, index) => {
         connection.progress += 0.01;
         if (connection.progress > 1) {
           connection.progress = 0;
           const endPoint = connection.end;
           endPoint.userData.dataReceived = (endPoint.userData.dataReceived || 0) + 1;
-          const SPAWN_THRESHOLD = 800;
-          if (endPoint.userData.dataReceived >= SPAWN_THRESHOLD) {
+
+          // USER REQUEST: Dynamic spawn threshold
+          if (endPoint.userData.dataReceived >= spawnThresholdRef.current) {
             endPoint.userData.dataReceived = 0;
-            const MAX_NEURONS = 150;
+            
+            const MAX_NEURONS = 100;
             if (pointsRef.current.length >= MAX_NEURONS) {
               const oldestNeuron = pointsRef.current.shift();
               if (oldestNeuron) {
@@ -170,10 +182,14 @@ export default function NeuralBackground() {
                 (oldestNeuron.material as THREE.Material).dispose();
               }
             }
+
             const newPosition = new THREE.Vector3().copy(endPoint.position).add(new THREE.Vector3().randomDirection().multiplyScalar(15));
             spawnNeuron(newPosition);
             updateNetwork();
+
+            spawnThresholdRef.current += 100;
           }
+
           const material = endPoint.material as THREE.MeshBasicMaterial;
           material.opacity = 0.8;
           const fadeOut = () => {
