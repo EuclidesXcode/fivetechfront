@@ -87,7 +87,7 @@ export default function NeuralBackground() {
       connectionsRef.current = [];
       dataParticlesRef.current = [];
       const dataParticleGeometry = new THREE.SphereGeometry(0.2, 8, 8);
-      const dataParticleMaterial = new THREE.MeshBasicMaterial({ color: 0xff00ff, transparent: true, opacity: 0.8 });
+      const dataParticleMaterial = new THREE.MeshBasicMaterial({ color: 0xff00ff, transparent: true, opacity: 0.9 });
       const connectionDistance = 100;
       pointsRef.current.forEach((point, i) => {
         pointsRef.current.slice(i + 1).forEach(otherPoint => {
