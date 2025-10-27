@@ -16,6 +16,10 @@ const ServicesSection = dynamic(() => import("../components/ServicesSection"), {
   loading: () => <div className="h-96" />,
 });
 
+const ClientsSection = dynamic(() => import("../components/ClientsSection"), {
+  loading: () => <div className="h-96" />,
+});
+
 export default function Home() {
   const [selectedService, setSelectedService] = useState<any>(null);
   const [isHiding, setIsHiding] = useState(false);
@@ -56,6 +60,8 @@ export default function Home() {
         <TechSection />
 
         <ServicesSection onCardClick={handleCardClick} />
+
+        <ClientsSection />
       </main>
 
       {selectedService && (
