@@ -44,7 +44,7 @@ export default function Home() {
     <div className="relative min-h-screen bg-gradient-to-b from-gray-900 to-black text-white">
       <NeuralBackgroundLoader />
 
-      <main className={`transition-opacity duration-500 ${isHiding ? 'opacity-0' : 'opacity-100'}`}>
+      <main className={`relative z-10 transition-opacity duration-500 ${isHiding ? 'opacity-0' : 'opacity-100'}`}>
         {/* Hero Section */}
         <section className="min-h-screen flex items-center justify-center">
           <div className="text-center">
