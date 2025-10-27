@@ -22,8 +22,6 @@ export default function ServiceCard({ title, description, icon, delay, onClick }
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // defer setting mounted to the next animation frame to avoid
-    // triggering a synchronous state update during SSR hydration.
     const id = requestAnimationFrame(() => setMounted(true));
     return () => cancelAnimationFrame(id);
   }, []);
@@ -32,7 +30,6 @@ export default function ServiceCard({ title, description, icon, delay, onClick }
     const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    // compute angle between center and cursor to orient streak lines like a compass
     const cx = rect.width / 2;
     const cy = rect.height / 2;
     const angle = Math.atan2(y - cy, x - cx) * (180 / Math.PI);
@@ -66,9 +63,8 @@ export default function ServiceCard({ title, description, icon, delay, onClick }
     mixBlendMode: 'screen' as const,
   };
 
-  // thinner cross streaks that follow the mouse; two rotated lines form a 4-directional cross
   const streakWidth = 250;
-  const streakHeight = 10; // ~50% thinner than before
+  const streakHeight = 10;
 
   const baseStreakStyle: React.CSSProperties = {
     position: 'absolute',
