@@ -9,26 +9,31 @@ export const TechCard = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="rounded-2xl border border-white/10 bg-white/2 shadow-lg shadow-black/10 transition-all hover:bg-white/8 overflow-hidden h-full"
+      className="rounded-2xl border border-white/10 bg-white/2 shadow-lg shadow-black/10 transition-all hover:bg-white/8 overflow-hidden h-full flex flex-col"
     >
-      <div className="flex flex-col md:flex-row">
-        {/* Image column: fills left side, flush to card edge on md+ */}
-        <div className="md:w-1/2 w-full relative h-[260px] md:h-[400px] flex-shrink-0">
+      {/* Title on top and centered */}
+      <div className="p-8 pb-6 text-center">
+        <h3 className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-purple-600 bg-clip-text text-transparent">
+          Inovação em Inteligência Artificial
+        </h3>
+      </div>
+
+      {/* Wrapper for image and text content */}
+      <div className="flex flex-col md:flex-row flex-grow">
+        {/* Image column */}
+        <div className="md:w-1/2 w-full relative h-[260px] md:h-auto flex-shrink-0">
           <Image
             src="/images/fivetech-demo.jpeg"
             alt="Profissional Five Tech"
             fill
             sizes="(max-width: 768px) 100vw, 50vw"
             priority
-            className="object-cover w-full h-full md:rounded-l-2xl rounded-t-2xl md:rounded-r-none"
+            className="object-cover object-top w-full h-full"
           />
         </div>
 
-        {/* Content column */}
-        <div className="md:w-1/2 p-8">
-          <h3 className="text-2xl font-bold mb-4 bg-gradient-to-r from-cyan-400 to-purple-600 bg-clip-text text-transparent">
-            Inovação em Inteligência Artificial
-          </h3>
+        {/* Content column (without title) */}
+        <div className="md:w-1/2 p-8 pt-4">
           <p className="text-gray-300 mb-4">
             Na FiveTech, transformamos dados em decisões e tecnologia em resultados.
             Nossa equipe de especialistas cria soluções inteligentes sob medida, combinando
