@@ -4,6 +4,7 @@ import "bootstrap/dist/css/bootstrap-grid.min.css";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import Footer from "@/components/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,6 +32,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Providers>{children}</Providers>
+        <Footer />
         <WhatsAppButton />
       </body>
     </html>

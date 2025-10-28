@@ -6,7 +6,6 @@ import Image from 'next/image';
 import NeuralBackgroundLoader from "../components/NeuralBackgroundLoader";
 import ServiceDetailModal from '../components/ServiceDetailModal';
 import { services } from '../data/services';
-import logoSemFundo from '../assets/logo-sem-fundo.png';
 
 const TechSection = dynamic(() => import("../components/TechSection"), {
   loading: () => <div className="h-96" />,
@@ -49,8 +48,10 @@ export default function Home() {
         <section className="min-h-screen flex items-center justify-center">
           <div className="text-center">
             <Image
-              src={logoSemFundo}
+              src="/images/logo-sem-fundo.png"
               alt="Five Tech Logo"
+              width={400}
+              height={100}
               priority
               className="[clip-path:inset(50px_0_50px_0)] mx-auto"
             />
