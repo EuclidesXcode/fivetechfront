@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { useState, useEffect } from 'react';
 
 // Import client logos
 import allianzLogo from '../assets/clients/logo-allianz.png';
@@ -44,29 +45,70 @@ const clients = [
 ];
 
 const ClientsSection = () => {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const duplicatedClients = [...clients, ...clients];
+
   return (
-    <section className="py-20 px-4 z-10">
+    <section className="py-20 z-10">
       <div className="container mx-auto text-center">
-      <h2 className="text-4xl font-bold text-center mb-12 bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-purple-600">
+        <h2 className="text-4xl font-bold text-center mb-12 bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-purple-600">
           Alguns de nossos clientes
         </h2>
-        <div className="flex flex-wrap justify-center items-start gap-x-8 gap-y-12 md:gap-x-12">
-          {clients.map((client) => (
-            <div key={client.name} className="flex flex-col items-center w-36">
-              <div className="w-24 h-24 bg-white border-2 border-gray-700 rounded-full flex items-center justify-center mb-3 transition-all duration-300 hover:border-blue-500">
-                <Image 
-                  src={client.logo} 
-                  alt={`${client.name} Logo`} 
-                  width={80} 
-                  height={80} 
-                  className="rounded-full object-contain p-1" 
-                />
-              </div>
-              <p className="text-sm text-center text-gray-300">{client.name}</p>
-            </div>
-          ))}
-        </div>
       </div>
+
+      {isMounted && (
+        <div className="scroller">
+          <ul className="scroller__inner">
+            {duplicatedClients.map((client, index) => (
+              <li key={`${client.name}-${index}`}>
+                <div className="flex flex-col items-center w-40">
+                  <div className="w-24 h-24 bg-white border-2 border-gray-700 rounded-full flex items-center justify-center mb-3 transition-all duration-300 hover:border-blue-500">
+                    <Image 
+                      src={client.logo} 
+                      alt={`${client.name} Logo`} 
+                      width={80} 
+                      height={80} 
+                      className="rounded-full object-contain p-1" 
+                    />
+                  </div>
+                  <p className="text-sm text-center text-gray-300">{client.name}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      <style jsx>{`
+        .scroller {
+          width: 100%;
+          overflow: hidden;
+          mask-image: linear-gradient(to right, transparent, white 20%, white 80%, transparent);
+          -webkit-mask-image: linear-gradient(to right, transparent, white 20%, white 80%, transparent);
+        }
+        .scroller__inner {
+          display: flex;
+          flex-wrap: nowrap;
+          width: max-content;
+          animation: scroll 80s linear infinite;
+        }
+        .scroller__inner li {
+          margin: 0 2rem; /* 32px */
+          flex-shrink: 0;
+        }
+        @keyframes scroll {
+          from {
+            transform: translateX(0);
+          }
+          to {
+            transform: translateX(-50%);
+          }
+        }
+      `}</style>
     </section>
   );
 };
