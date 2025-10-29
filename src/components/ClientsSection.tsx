@@ -12,19 +12,35 @@ import philipsLogo from '../assets/clients/logo-philips.jpg';
 import manausLogo from '../assets/clients/logo-prefeitura-manaus.png';
 import saoCamiloLogo from '../assets/clients/logo-sao-camilo.png';
 import sirioLibanesLogo from '../assets/clients/logo-sirio-libanes.png';
+import alvoradaLogo from '../assets/clients/logo-alvorada.png';
+import bayerLogo from '../assets/clients/logo-bayer.svg';
+import cpflLogo from '../assets/clients/logo-cpfl.png';
+import energisaLogo from '../assets/clients/logo-energisa.jpg';
+import hcLogo from '../assets/clients/logo-hc.png';
+import hcorLogo from '../assets/clients/logo-hcor.png';
+import seconciSpLogo from '../assets/clients/logo-seconci-sp.jpg';
+import unimedLogo from '../assets/clients/logo-unimed.png';
 
 const clients = [
   { name: 'Philips', logo: philipsLogo },
   { name: 'Hospital São Camilo', logo: saoCamiloLogo },
   { name: 'Hospital Sírio-Libanês', logo: sirioLibanesLogo },
   { name: 'Hospital Alemão Oswaldo Cruz', logo: oswaldoCruzLogo },
-  { name: 'CET – Companhia de Engenharia de Tráfego', logo: cetLogo },
+  { name: 'CET', logo: cetLogo },
   { name: 'Convias', logo: conviasLogo },
   { name: 'Geoinfra', logo: geoinfraLogo },
   { name: 'Comgás', logo: comgasLogo },
   { name: 'Prefeitura de Manaus', logo: manausLogo },
   { name: 'Allianz', logo: allianzLogo },
   { name: 'Mitsubishi Motors', logo: mitsubishiLogo },
+  { name: 'Hospital das Clínicas BH', logo: hcLogo },
+  { name: 'UNIMED', logo: unimedLogo },
+  { name: 'Hospital Alvorada', logo: alvoradaLogo },
+  { name: 'Seconci-SP', logo: seconciSpLogo },
+  { name: 'Hospital HCOR', logo: hcorLogo },
+  { name: 'ENERGISA', logo: energisaLogo },
+  { name: 'CPFL', logo: cpflLogo },
+  { name: 'Bayer', logo: bayerLogo },
 ];
 
 const ClientsSection = () => {
