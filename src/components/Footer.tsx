@@ -97,7 +97,7 @@ export default function Footer() {
               </Link>
               <p className="text-gray-400 text-sm">
                 Rua Joaquim Bueno 1397<br />
-                Campinas - São Paulo
+                Jaguariúna - São Paulo
               </p>
               <div className="flex space-x-4 mt-6">
                 <a href="https://www.instagram.com/fivetechsolucoesemtecnologia?igsh=MWd0ZWFmZHd4cDZxZQ==" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
