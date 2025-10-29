@@ -10,8 +10,8 @@ export const GeckoIcon = ({ className, style }: GeckoIconProps) => (
   <Image
     src="/images/largatixa.png"
     alt="Curiosidade"
-    width={28}
-    height={28}
+    width={24}
+    height={24}
     className={`${className} filter grayscale invert`}
     style={style}
   />
