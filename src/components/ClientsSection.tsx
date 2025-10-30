@@ -57,7 +57,7 @@ const ClientsSection = () => {
     <section className="py-20 z-10">
       <div className="container mx-auto text-center">
         <h2 className="text-4xl font-bold text-center mb-12 bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-purple-600">
-          Alguns de nossos clientes
+          Alguns de nossos Clientes
         </h2>
       </div>
 
@@ -76,7 +76,7 @@ const ClientsSection = () => {
                       className="rounded-full object-contain p-1" 
                     />
                   </div>
-                  <p className="text-sm text-center text-gray-300">{client.name}</p>
+                  <p className="text-sm text-center text-white">{client.name}</p>
                 </div>
               </li>
             ))}
