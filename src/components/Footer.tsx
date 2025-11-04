@@ -161,7 +161,7 @@ export default function Footer() {
           {/* Bottom Bar */}
           <div className="mt-12 pt-8 border-t border-white/10 text-center text-gray-500 text-sm">
             <p>&copy; {new Date().getFullYear()} FiveTech Soluções em Tecnologia. Todos os direitos reservados.</p>
-            <p className="mt-2">CNPJ: 47.793.601/0001-62</p>
+            <p className="mt-2">CNPJ: 63.482.860/0001-29</p>
           </div>
         </div>
         
