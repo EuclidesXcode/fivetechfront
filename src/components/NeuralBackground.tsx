@@ -2,6 +2,8 @@
 
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { OrbitControls } from 'three-orbitcontrols-ts';
+import { useUI } from '@/context/UIContext';
 
 // Throttle utility (unchanged)
 function throttle<T extends (...args: any[]) => void>(func: T, limit: number): T {
@@ -45,10 +47,21 @@ export default function NeuralBackground() {
   const zoomTargetRef = useRef<THREE.Vector3 | null>(null);
   const isZoomingInRef = useRef(false);
   const isZoomingOutRef = useRef(false);
+  const isZoomingOutFullRef = useRef(false);
   const originalCameraPosition = useRef(new THREE.Vector3(0, 0, 40));
+  const zoomedOutFullPosition = useRef(new THREE.Vector3(0, 0, 250));
   const focusedNeuronRef = useRef<THREE.Mesh | null>(null);
   
   const spawnThresholdRef = useRef(100);
+  const { isNeuralViewActive } = useUI();
+
+  useEffect(() => {
+    if (isNeuralViewActive) {
+      window.dispatchEvent(new CustomEvent('zoomOutFull'));
+    } else {
+      window.dispatchEvent(new CustomEvent('zoomInFull'));
+    }
+  }, [isNeuralViewActive]);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -66,6 +79,10 @@ export default function NeuralBackground() {
     renderer.autoClear = false;
     renderer.setSize(window.innerWidth, window.innerHeight);
     containerRef.current.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enabled = false;
+
 
     const fadeMaterial = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.1 });
     const fadePlane = new THREE.PlaneGeometry(1, 1);
@@ -135,7 +152,7 @@ export default function NeuralBackground() {
 
     let currentRotation = 0;
     const handleScroll = () => {
-      if (isZoomingInRef.current || isZoomingOutRef.current) return;
+      if (isZoomingInRef.current || isZoomingOutRef.current || isNeuralViewActive) return;
       const scrollY = window.scrollY || 0;
       const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
       const scrollPercent = scrollHeight > 0 ? scrollY / scrollHeight : 0;
@@ -165,12 +182,29 @@ export default function NeuralBackground() {
       isZoomingInRef.current = false;
     };
 
+    const handleZoomOutFullRequest = () => {
+      isZoomingOutFullRef.current = true;
+      controls.enabled = true;
+    };
+
+    const handleZoomInFullRequest = () => {
+      isZoomingOutFullRef.current = false;
+      controls.enabled = false;
+    };
+
     let animationFrameId: number;
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
       renderer.clearDepth();
+      
+      if(isNeuralViewActive) {
+        controls.update();
+      }
 
-      if (isZoomingInRef.current && zoomTargetRef.current) {
+      if (isZoomingOutFullRef.current) {
+        camera.position.lerp(zoomedOutFullPosition.current, 0.05);
+      }
+      else if (isZoomingInRef.current && zoomTargetRef.current) {
         const targetNeuronPos = zoomTargetRef.current.clone().sub(new THREE.Vector3(0, 0, 2));
         camera.position.lerp(zoomTargetRef.current, 0.05);
         camera.lookAt(targetNeuronPos);
@@ -179,11 +213,10 @@ export default function NeuralBackground() {
         }
       } else if (isZoomingOutRef.current) {
         camera.position.lerp(originalCameraPosition.current, 0.05);
-        camera.lookAt(0, 0, 0);
         if (camera.position.distanceTo(originalCameraPosition.current) < 0.1) {
           isZoomingOutRef.current = false;
         }
-      } else {
+      } else if (!isNeuralViewActive) {
         networkGroup.rotation.y += (currentRotation - networkGroup.rotation.y) * 0.05;
         camera.lookAt(0, 0, 0);
       }
@@ -206,7 +239,6 @@ export default function NeuralBackground() {
               }
             }
             
-            // USER REQUEST: Spawn new neuron at a random position in the sphere
             const radius = 100;
             const theta = THREE.MathUtils.randFloatSpread(360) * Math.PI / 180;
             const phi = THREE.MathUtils.randFloatSpread(360) * Math.PI / 180;
@@ -248,11 +280,14 @@ export default function NeuralBackground() {
       const width = height * camera.aspect;
       fadeMesh.scale.set(width, height, 1);
     };
+
     const throttledScroll = throttle(handleScroll, 100);
     window.addEventListener('scroll', throttledScroll);
     window.addEventListener('resize', handleResize);
     window.addEventListener('zoomToRandomNeuron', handleZoomInRequest);
     window.addEventListener('zoomOut', handleZoomOutRequest);
+    window.addEventListener('zoomOutFull', handleZoomOutFullRequest);
+    window.addEventListener('zoomInFull', handleZoomInFullRequest);
     handleResize();
     animate();
 
@@ -261,18 +296,20 @@ export default function NeuralBackground() {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('zoomToRandomNeuron', handleZoomInRequest);
       window.removeEventListener('zoomOut', handleZoomOutRequest);
+      window.removeEventListener('zoomOutFull', handleZoomOutFullRequest);
+      window.removeEventListener('zoomInFull', handleZoomInFullRequest);
       cancelAnimationFrame(animationFrameId);
       renderer.dispose();
       if (containerRef.current && renderer.domElement) {
         containerRef.current.removeChild(renderer.domElement);
       }
     };
-  }, []);
+  }, [isNeuralViewActive]);
 
   return (
     <div 
       ref={containerRef} 
-      className="fixed top-0 left-0 w-full h-full z-0 opacity-[.60]"
+      className={`fixed top-0 left-0 w-full h-full z-0 ${isNeuralViewActive ? 'opacity-100' : 'opacity-[.60]'}`}
     />
   );
 }

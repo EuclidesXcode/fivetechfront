@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { services } from "@/data/services";
@@ -8,6 +8,7 @@ import LegalModal from "./LegalModal";
 import { InstagramIcon } from "./icons/InstagramIcon";
 import { WhatsAppIcon } from "./icons/WhatsAppIcon";
 import { GeckoIcon } from "./icons/GeckoIcon";
+import { useUI } from "@/context/UIContext";
 
 // Text components remain the same...
 const PrivacyPolicyText = () => (
@@ -77,6 +78,7 @@ const CuriosityText = () => (
 
 export default function Footer() {
   const [modalContent, setModalContent] = useState<"terms" | "privacy" | "curiosity" | null>(null);
+  const { isNeuralViewActive, toggleNeuralView } = useUI();
 
   const phoneNumber = "5511934241132";
   const message = "Olá! Gostaria de mais informações sobre os serviços da FiveTech.";
@@ -84,6 +86,10 @@ export default function Footer() {
 
   const openModal = (type: "terms" | "privacy" | "curiosity") => setModalContent(type);
   const closeModal = () => setModalContent(null);
+
+  if (isNeuralViewActive) {
+    return null;
+  }
 
   return (
     <>
@@ -152,6 +158,11 @@ export default function Footer() {
                 <li>
                   <button onClick={() => openModal("privacy")} className="text-gray-400 hover:text-white transition-colors">
                     Política de Privacidade
+                  </button>
+                </li>
+                <li>
+                  <button onClick={toggleNeuralView} className="text-gray-400 hover:text-white transition-colors">
+                    Visualizar rede neural Completa
                   </button>
                 </li>
               </ul>

@@ -2,19 +2,12 @@ import Image from 'next/image';
 import { useState, useEffect } from 'react';
 
 // Import client logos
-import allianzLogo from '../assets/clients/logo-allianz.png';
-import cetLogo from '../assets/clients/logo-cet.png';
-import comgasLogo from '../assets/clients/logo-comgas.png';
-import conviasLogo from '../assets/clients/logo-convias.jpeg';
-import geoinfraLogo from '../assets/clients/logo-geo-infra.png';
-import mitsubishiLogo from '../assets/clients/logo-mitsubishi.png';
 import oswaldoCruzLogo from '../assets/clients/logo-osvaldo-cruz.jpeg';
 import philipsLogo from '../assets/clients/logo-philips.jpg';
 import manausLogo from '../assets/clients/logo-prefeitura-manaus.png';
 import saoCamiloLogo from '../assets/clients/logo-sao-camilo.png';
 import sirioLibanesLogo from '../assets/clients/logo-sirio-libanes.png';
 import alvoradaLogo from '../assets/clients/logo-alvorada.png';
-import bayerLogo from '../assets/clients/logo-bayer.svg';
 import cpflLogo from '../assets/clients/logo-cpfl.png';
 import energisaLogo from '../assets/clients/logo-energisa.jpg';
 import hcLogo from '../assets/clients/logo-hc.png';
@@ -27,13 +20,7 @@ const clients = [
   { name: 'Hospital São Camilo', logo: saoCamiloLogo },
   { name: 'Hospital Sírio-Libanês', logo: sirioLibanesLogo },
   { name: 'Hospital Alemão Oswaldo Cruz', logo: oswaldoCruzLogo },
-  { name: 'CET', logo: cetLogo },
-  { name: 'Convias', logo: conviasLogo },
-  { name: 'Geoinfra', logo: geoinfraLogo },
-  { name: 'Comgás', logo: comgasLogo },
   { name: 'Prefeitura de Manaus', logo: manausLogo },
-  { name: 'Allianz', logo: allianzLogo },
-  { name: 'Mitsubishi Motors', logo: mitsubishiLogo },
   { name: 'Hospital das Clínicas BH', logo: hcLogo },
   { name: 'UNIMED', logo: unimedLogo },
   { name: 'Hospital Alvorada', logo: alvoradaLogo },
@@ -41,7 +28,6 @@ const clients = [
   { name: 'Hospital HCOR', logo: hcorLogo },
   { name: 'ENERGISA', logo: energisaLogo },
   { name: 'CPFL', logo: cpflLogo },
-  { name: 'Bayer', logo: bayerLogo },
 ];
 
 const ClientsSection = () => {
@@ -68,12 +54,12 @@ const ClientsSection = () => {
               <li key={`${client.name}-${index}`}>
                 <div className="flex flex-col items-center w-40">
                   <div className="w-24 h-24 bg-white border-2 border-gray-700 rounded-full flex items-center justify-center mb-3 transition-all duration-300 hover:border-blue-500">
-                    <Image 
-                      src={client.logo} 
-                      alt={`${client.name} Logo`} 
-                      width={80} 
-                      height={80} 
-                      className="rounded-full object-contain p-1" 
+                    <Image
+                      src={client.logo}
+                      alt={`${client.name} Logo`}
+                      width={80}
+                      height={80}
+                      className="rounded-full object-contain p-1"
                     />
                   </div>
                   <p className="text-sm text-center text-white">{client.name}</p>
